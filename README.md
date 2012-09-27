@@ -1,6 +1,8 @@
 # fresh\_redis
 
-Redis is great for managing data that expires on a atomically (like caches). However, for data that expires gradually over time, the native commands don't get you all the way. For instance, how would you calculate _"count of login failures and successes for the last hour"_? The problem is while you can keep a count using a simple `incr` operation, you have to expire the entire total all at once, or not at all.
+Redis is great for managing data that expires on atomically (like caches). However, for data that expires gradually over time, built in commands don't get you all the way. 
+
+For instance, how would you calculate _"count of login failures and successes for the last hour"_? The problem is while you can keep a count using a simple `incr` operation, you have to expire the entire total all at once, or not at all.
 
 A common solution is to split the data up into buckets, say one for each minute, each with their own expiry. You write to the current bucket, set the expiry, then allow it to naturally expire and drop out of your result set over time. To obtain the total value, you `get` all the bucket values, and aggregate the values in some fashion.
 
@@ -22,7 +24,7 @@ Or install it yourself as:
 
 ## Usage
 
-Simple usage
+### Simple usage
 
 ```ruby
 require "redis"
@@ -43,7 +45,9 @@ fresh.fsum "failed_login" # will return 3
 fresh.fsum "failed_login" # will return 2, cause the first incr has expired by now
 ```
 
-Tweaking _"freshness"_ and _"granularity"_. Think of it like stock rotation at your local supermarket. Freshness is how long we'll keep food around for before throwing it out, granularity is what batches we'll throw old food out together as. Something like _"we'll keep food around for a week, but we'll throw out everything for the same day at the same time."_ This is a performance trade off. Smaller granularity means more precise expiration of data, at the expense of having to store, retrieve, and check more buckets of data to get the aggregate value.
+### Tweaking _"freshness"_ and _"granularity"_. 
+
+Think of it like stock rotation at your local supermarket. Freshness is how long we'll keep food around for before throwing it out, granularity is what batches we'll throw old food out together as. Something like _"we'll keep food around for a week, but we'll throw out everything for the same day at the same time."_ This is a performance trade off. Smaller granularity means more precise expiration of data, at the expense of having to store, retrieve, and check more buckets of data to get the aggregate value.
 
 ```ruby
 # lets track douch users spamming the forum so we can do something about it...
