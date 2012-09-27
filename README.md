@@ -66,4 +66,4 @@ fresh.fsum "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
 5. Create new Pull Request
 
 ## Who the hell?
-I blame [@madlep](http://twitter.com/madlep) aka Julian Doherty. Send hate mail to [madlep@madlep.com](mailto:madlep@madlep.com)
+I blame [@madlep](http://twitter.com/madlep) aka Julian Doherty. Send hate mail to [madlep@madlep.com](mailto:madlep@madlep.com), or deface [madlep.com](http://madlep.com) in protest
