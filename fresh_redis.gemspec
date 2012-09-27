@@ -5,7 +5,7 @@ Gem::Specification.new do |gem|
   gem.email         = ["madlep@madlep.com"]
   gem.description   = %q{Aggregate, expiring, recent data in Redis}
   gem.summary       = <<-TEXT.strip
-    Store time series data that expires in a FIFO manner (i.e. show me stuff for the last 60 minutes)
+    Use redis for working with recent temporal based data that can expiry gradually. Useful for things like "get a count all failed login attempts for the last hour"
   TEXT
   gem.homepage      = ""
 
