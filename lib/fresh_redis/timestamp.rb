@@ -13,5 +13,5 @@ class FreshRedis
       to = normalize_time(t, granularity)
       (from..to).step(granularity)
     end
-  end    
+  end
 end
