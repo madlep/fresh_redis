@@ -24,37 +24,38 @@ Or install it yourself as:
 
 Simple usage
 
-    ```ruby
-    require "redis"
-    require "fresh_redis"
-    fresh = FreshRedis.new(Redis.current)
+```ruby
+require "redis"
+require "fresh_redis"
+fresh = FreshRedis.new(Redis.current)
 
-    fresh.fincr "failed_login"
+fresh.fincr "failed_login"
 
-    # wait a bit...
-    fresh.fincr "failed_login"
+# wait a bit...
+fresh.fincr "failed_login"
 
-    # then straight away...
-    fresh.fincr "failed_login"
+# then straight away...
+fresh.fincr "failed_login"
 
-    fresh.fsum "failed_login" # will return 3
+fresh.fsum "failed_login" # will return 3
 
-    # wait for the first incr to expire...
-    fresh.fsum "failed_login" # will return 2, cause the first incr has expired by now
-    ```
+# wait for the first incr to expire...
+fresh.fsum "failed_login" # will return 2, cause the first incr has expired by now
+```
+
 Tweaking _"freshness"_ and _"granularity"_. Think of it like stock rotation at your local supermarket. Freshness is how long we'll keep food around for before throwing it out, granularity is what batches we'll throw old food out together as. Something like _"we'll keep food around for a week, but we'll throw out everything for the same day at the same time."_ This is a performance trade off. Smaller granularity means more precise expiration of data, at the expense of having to store, retrieve, and check more buckets of data to get the aggregate value.
 
-    ```ruby
-    # lets track douch users spamming the forum so we can do something about it...
+```ruby
+# lets track douch users spamming the forum so we can do something about it...
 
-    # store post count for a user for 10 minutes (600 seconds), in buckets of time duration 30 seconds
-    fresh.fincr "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
+# store post count for a user for 10 minutes (600 seconds), in buckets of time duration 30 seconds
+fresh.fincr "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
 
-    # ...
+# ...
 
-    # note, need to pass in the SAME freshness and granularity options as fincr, so it can correclty lookup the correct keys
-    fresh.fsum "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
-    ```
+# note, need to pass in the SAME freshness and granularity options as fincr, so it can correclty lookup the correct keys
+fresh.fsum "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
+```
 
 ## Contributing
 
