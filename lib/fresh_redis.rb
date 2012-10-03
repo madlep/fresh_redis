@@ -51,10 +51,13 @@ class FreshRedis
 
   def fhget(key, hash_key, options={})
     options = default_options(options)
+    t           = options[:t]
+    freshness   = options[:freshness]
+    granularity = options[:granularity]
 
-    reduce(key, options, 0){|acc, timestamp_total|
-      acc + timestamp_total.to_i
-    }
+    raw_values = fetch_raw_values(key, t, freshness, granularity) do |timestamp_key|
+      @redis.hget(timestamp_key, hash_key)
+    end.compact
   end
 
   private

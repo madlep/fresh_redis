@@ -24,6 +24,7 @@ describe FreshRedis do
 
   describe "#fsum" do
     it "should add the values of keys for specified freshness and granularity" do
+      subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 - 10
       subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 1
       subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 2
       subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 3
@@ -35,6 +36,16 @@ describe FreshRedis do
       subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 55
 
       subject.fsum("foo", :freshness => 60, :granularity => 10, :t => now).should ==  9
+    end
+  end
+
+  describe "#fhset" do
+    it "should set a value in a hash with a specified granularity" do
+      subject.fhset "requests", "some_key", "0", :freshness => 60, :granularity => 10, :t => now - 60 - 10 # Too old of a bucket
+      subject.fhset "requests", "some_key", "1", :freshness => 60, :granularity => 10, :t => now - 60 + 5
+      subject.fhset "requests", "some_key", "2", :freshness => 60, :granularity => 10, :t => now - 60 + 15
+      subject.fhset "requests", "some_key", "3", :freshness => 60, :granularity => 10, :t => now - 60 + 16 # This overwrites the previous value in the bucket
+      subject.fhget("requests", "some_key", :freshness => 60, :granularity => 10, :t => now).should == ["1", "3"]
     end
   end
 end
