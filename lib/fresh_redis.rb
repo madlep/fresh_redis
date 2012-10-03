@@ -36,6 +36,27 @@ class FreshRedis
     }
   end
 
+  def fhset(key, hash_key, value, options={})
+    options = default_options(options)
+    t           = options[:t]
+    freshness   = options[:freshness]
+    granularity = options[:granularity]
+
+    key = normalize_key(key, t, granularity)
+    @redis.multi do
+      @redis.hset(key, hash_key, value)
+      @redis.expire(key, freshness)
+    end
+  end
+
+  def fhget(key, hash_key, options={})
+    options = default_options(options)
+
+    reduce(key, options, 0){|acc, timestamp_total|
+      acc + timestamp_total.to_i
+    }
+  end
+
   private
   def reduce(key, options={}, initial=nil, &reduce_operation)
     options = default_options(options)
@@ -43,14 +64,20 @@ class FreshRedis
     freshness   = options[:freshness]
     granularity = options[:granularity]
 
-    raw_totals = @redis.pipelined {
-      range_timestamps(t, freshness, granularity).each do |timestamp|
-        timestamp_key = [key, timestamp].join(":")
-        @redis.get(timestamp_key)
-      end
-    }
+    raw_totals = fetch_raw_values(key, t, freshness, granularity) do |timestamp_key|
+      @redis.get(timestamp_key)
+    end
 
     raw_totals.reduce(initial, &reduce_operation)
+  end
+
+  def fetch_raw_values(key, t, freshness, granularity)
+    @redis.pipelined {
+      range_timestamps(t, freshness, granularity).each do |timestamp|
+        timestamp_key = [key, timestamp].join(":")
+        yield timestamp_key
+      end
+    }
   end
 
   def default_options(options)
