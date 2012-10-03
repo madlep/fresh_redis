@@ -40,7 +40,22 @@ describe FreshRedis do
   end
 
   describe "#fhset" do
-    it "should set a value in a hash with a specified granularity" do
+    it "should set a value for a key in a hash for the normalized timestamp" do
+      subject.fhset "foo", "bar", "value", :granularity => 60, :t => now
+      subject.fhset "foo", "bar", "newer_value", :granularity => 60, :t => now + 3
+      subject.fhset "foo", "bar", "different_bucket", :granularity => 60, :t => now + 60 # different normalized key
+      mock_redis.data["foo:#{normalized_now_minute}"].should == {"bar" => "newer_value"}
+    end
+
+    it "should set the freshness as the expiry" do
+      # relying on mock_redis's time handling here - which converts to/from using Time.now Possible flakey temporal breakage potential
+      subject.fhset "foo", "bar", "baz", :freshness => 3600, :t => now
+      mock_redis.ttl("foo:#{normalized_now_minute}").should == 3600
+    end
+  end
+
+  describe "#fhget" do
+    it "should get all the values of the specified key in specified hash for specified frenhness and granularity" do
       subject.fhset "requests", "some_key", "0", :freshness => 60, :granularity => 10, :t => now - 60 - 10 # Too old of a bucket
       subject.fhset "requests", "some_key", "1", :freshness => 60, :granularity => 10, :t => now - 60 + 5
       subject.fhset "requests", "some_key", "2", :freshness => 60, :granularity => 10, :t => now - 60 + 15
