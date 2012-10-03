@@ -54,6 +54,15 @@ describe FreshRedis do
     end
   end
 
+  describe "#fhdel" do
+    it "should remove a value for a key in a hash for the normalized timestamp" do
+      subject.fhset "foo", "bar", "value", :granularity => 10, :freshness => 20, :t => now - 15
+      subject.fhset "foo", "bar", "different_bucket", :granularity => 10, :freshness => 20, :t => now
+      subject.fhdel "foo", "bar", :granularity => 10, :freshness => 0, :t => now # Should only delete the most recent bucket
+      subject.fhget("foo", "bar", :granularity => 10, :freshness => 20, :t => now ).should == ["value"]
+    end
+  end
+
   describe "#fhget" do
     it "should get all the values of the specified key in specified hash for specified frenhness and granularity" do
       subject.fhset "requests", "some_key", "0", :freshness => 60, :granularity => 10, :t => now - 60 - 10 # Too old of a bucket

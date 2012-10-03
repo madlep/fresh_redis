@@ -60,6 +60,17 @@ class FreshRedis
     end.compact
   end
 
+  def fhdel(key, hash_key, options={})
+    options = default_options(options)
+    t           = options[:t]
+    freshness   = options[:freshness]
+    granularity = options[:granularity]
+
+    fetch_raw_values(key, t, freshness, granularity) do |timestamp_key|
+      @redis.hdel(timestamp_key, hash_key)
+    end
+  end
+
   private
   def reduce(key, options={}, initial=nil, &reduce_operation)
     options = default_options(options)
