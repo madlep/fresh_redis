@@ -60,6 +60,17 @@ class FreshRedis
     end.compact
   end
 
+  def fhgetall(key, options={})
+    options = default_options(options)
+    t           = options[:t]
+    freshness   = options[:freshness]
+    granularity = options[:granularity]
+
+    each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
+      @redis.hgetall(timestamp_key)
+    end.reject { |hash| hash.count.zero? }
+  end
+
   def fhdel(key, hash_key, options={})
     options = default_options(options)
     t           = options[:t]

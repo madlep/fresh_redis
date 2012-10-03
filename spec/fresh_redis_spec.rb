@@ -64,12 +64,25 @@ describe FreshRedis do
   end
 
   describe "#fhget" do
-    it "should get all the values of the specified key in specified hash for specified frenhness and granularity" do
+    it "should get all the values of the specified key in specified hash for specified freshness and granularity" do
       subject.fhset "requests", "some_key", "0", :freshness => 60, :granularity => 10, :t => now - 60 - 10 # Too old of a bucket
       subject.fhset "requests", "some_key", "1", :freshness => 60, :granularity => 10, :t => now - 60 + 5
       subject.fhset "requests", "some_key", "2", :freshness => 60, :granularity => 10, :t => now - 60 + 15
       subject.fhset "requests", "some_key", "3", :freshness => 60, :granularity => 10, :t => now - 60 + 16 # This overwrites the previous value in the bucket
       subject.fhget("requests", "some_key", :freshness => 60, :granularity => 10, :t => now).should == ["1", "3"]
+    end
+  end
+
+  describe "#fhgetall" do
+    it "should get all the values of the specified hash for specified freshness and granularity" do
+      subject.fhset "requests", "some_key", "0", :freshness => 60, :granularity => 10, :t => now - 60 - 10 # Too old of a bucket
+      subject.fhset "requests", "some_key", "1", :freshness => 60, :granularity => 10, :t => now - 60 + 5
+      subject.fhset "requests", "some_key", "2", :freshness => 60, :granularity => 10, :t => now - 60 + 15
+      subject.fhset "requests", "another_key", "3", :freshness => 60, :granularity => 10, :t => now - 60 + 16 # This overwrites the previous value in the bucket
+      subject.fhgetall("requests", :freshness => 60, :granularity => 10, :t => now).should == [
+        {"some_key" => "1"},
+        {"some_key" => "2", "another_key" => "3"}
+      ]
     end
   end
 end
