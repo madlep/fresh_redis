@@ -55,7 +55,7 @@ class FreshRedis
     freshness   = options[:freshness]
     granularity = options[:granularity]
 
-    raw_values = each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
+    each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
       @redis.hget(timestamp_key, hash_key)
     end.compact
   end
