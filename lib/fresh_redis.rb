@@ -55,7 +55,7 @@ class FreshRedis
     freshness   = options[:freshness]
     granularity = options[:granularity]
 
-    raw_values = fetch_raw_values(key, t, freshness, granularity) do |timestamp_key|
+    raw_values = each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
       @redis.hget(timestamp_key, hash_key)
     end.compact
   end
@@ -66,7 +66,7 @@ class FreshRedis
     freshness   = options[:freshness]
     granularity = options[:granularity]
 
-    fetch_raw_values(key, t, freshness, granularity) do |timestamp_key|
+    each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
       @redis.hdel(timestamp_key, hash_key)
     end
   end
@@ -78,14 +78,14 @@ class FreshRedis
     freshness   = options[:freshness]
     granularity = options[:granularity]
 
-    raw_totals = fetch_raw_values(key, t, freshness, granularity) do |timestamp_key|
+    raw_totals = each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
       @redis.get(timestamp_key)
     end
 
     raw_totals.reduce(initial, &reduce_operation)
   end
 
-  def fetch_raw_values(key, t, freshness, granularity)
+  def each_timestamped_key(key, t, freshness, granularity)
     @redis.pipelined {
       range_timestamps(t, freshness, granularity).each do |timestamp|
         timestamp_key = [key, timestamp].join(":")
