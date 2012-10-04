@@ -82,6 +82,15 @@ class FreshRedis
     end
   end
 
+  def each_timestamped_key(key, t, freshness, granularity)
+    @redis.pipelined {
+      range_timestamps(t, freshness, granularity).each do |timestamp|
+        timestamp_key = [key, timestamp].join(":")
+        yield timestamp_key
+      end
+    }
+  end
+
   private
   def reduce(key, options={}, initial=nil, &reduce_operation)
     options = default_options(options)
@@ -94,15 +103,6 @@ class FreshRedis
     end
 
     raw_totals.reduce(initial, &reduce_operation)
-  end
-
-  def each_timestamped_key(key, t, freshness, granularity)
-    @redis.pipelined {
-      range_timestamps(t, freshness, granularity).each do |timestamp|
-        timestamp_key = [key, timestamp].join(":")
-        yield timestamp_key
-      end
-    }
   end
 
   def default_options(options)
