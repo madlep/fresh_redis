@@ -8,8 +8,6 @@ class FreshRedis
   include Hash
   include String
 
-  VERSION = "0.0.1"
-
   DEFAULT_OPTIONS = {
     :freshness => 60 * 60, # 1 hour
     :granularity => 1 * 60 # 1 minute
