@@ -1,7 +1,8 @@
+require 'fresh_redis/hash'
+require 'fresh_redis/key'
+require 'fresh_redis/string'
 require 'fresh_redis/timestamp'
 require 'fresh_redis/version'
-require 'fresh_redis/hash'
-require 'fresh_redis/string'
 
 class FreshRedis
   include Timestamp
@@ -26,7 +27,7 @@ class FreshRedis
     }
   end
 
-  private
+  protected
 
   def default_options(options)
     options = DEFAULT_OPTIONS.merge(options)
