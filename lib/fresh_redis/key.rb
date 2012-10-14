@@ -1,8 +1,5 @@
-require 'fresh_redis/timestamp'
-
 class FreshRedis
   class Key
-    include Timestamp
 
     DEFAULT_OPTIONS = {
       :freshness => 60 * 60, # 1 hour
@@ -32,7 +29,7 @@ class FreshRedis
     end
 
     def redis_key
-      normalize_key(@base_key, @t, @granularity)
+      [@base_key, normalize_time(@t, @granularity)].join(":")
     end
 
     def timestamp_buckets
@@ -41,9 +38,19 @@ class FreshRedis
       (from..to).step(@granularity).map{|timestamp| [@base_key, timestamp].join(":") }
     end
 
+    def ==(other)
+      same = true
+      same &= Key === other
+      same &= @base_key     == other.instance_variable_get(:@base_key)
+      same &= @t            == other.instance_variable_get(:@t)
+      same &= @freshness    == other.instance_variable_get(:@freshness)
+      same &= @granularity  == other.instance_variable_get(:@granularity)
+      same
+    end
+
     private
-    def normalize_key(key, t, granularity)
-      [key, normalize_time(t, granularity)].join(":")
+    def normalize_time(t, granularity)
+      t - (t % granularity)
     end
   end
 end
