@@ -1,39 +1,22 @@
 class FreshRedis
   module String
     def fincr(key, options={})
-      options = default_options(options)
-      t           = options[:t]
-      freshness   = options[:freshness]
-      granularity = options[:granularity]
-
-      key = normalize_key(key, t, granularity)
+      key = Key.build(key, options)
       @redis.multi do
-        @redis.incr key
-        @redis.expire key, freshness
+        @redis.incr(key.redis_key)
+        @redis.expire(key.redis_key, key.freshness)
       end
     end
 
     def fsum(key, options={})
-      options = default_options(options)
-
-      reduce(key, options, 0){|acc, timestamp_total|
-        acc + timestamp_total.to_i
+      key = Key.build(key, options)
+      @redis.pipelined {
+        key.timestamp_buckets.each do |bucket_key|
+          @redis.get(bucket_key)
+        end
+      }.reduce(0){|acc, value|
+        value ? acc + value.to_i : acc
       }
-    end
-
-    private
-
-    def reduce(key, options={}, initial=nil, &reduce_operation)
-      options = default_options(options)
-      t           = options[:t]
-      freshness   = options[:freshness]
-      granularity = options[:granularity]
-
-      raw_totals = each_timestamped_key(key, t, freshness, granularity) do |timestamp_key|
-        @redis.get(timestamp_key)
-      end
-
-      raw_totals.reduce(initial, &reduce_operation)
     end
   end
 end
