@@ -24,7 +24,7 @@ Or install it yourself as:
 
 ## Usage
 
-### Simple usage
+### Simple counts
 
 ```ruby
 require "redis"
@@ -43,6 +43,12 @@ fresh.fsum "failed_login" # will return 3
 
 # wait for the first incr to expire...
 fresh.fsum "failed_login" # will return 2, cause the first incr has expired by now
+```
+
+### Hash operations
+
+```ruby
+# TODO
 ```
 
 ### Tweaking _"freshness"_ and _"granularity"_. 
