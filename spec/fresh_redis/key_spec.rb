@@ -3,7 +3,6 @@ require 'fresh_redis'
 describe FreshRedis::Key do
   let(:now) { Time.new(2012, 9, 27, 15, 40, 56, "+10:00").to_i }
   let(:normalized_now_minute) { Time.new(2012, 9, 27, 15, 40, 0, "+10:00").to_i }
-  let(:normalized_now_hour) { Time.new(2012, 9, 27, 15, 0, 0, "+10:00").to_i }
 
   describe ".build" do
     it "complains if no args" do
