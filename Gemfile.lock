@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    fresh_redis (0.0.4)
+    fresh_redis (0.0.5)
       redis
 
 GEM
@@ -16,6 +16,7 @@ GEM
       rspec (~> 2.11)
     listen (0.5.3)
     mock_redis (0.5.2)
+    rake (0.9.2.2)
     redis (3.0.2)
     rspec (2.11.0)
       rspec-core (~> 2.11.0)
@@ -34,4 +35,5 @@ DEPENDENCIES
   fresh_redis!
   guard-rspec (= 2.1.0)
   mock_redis (= 0.5.2)
+  rake (= 0.9.2.2)
   rspec
