@@ -24,19 +24,20 @@ describe FreshRedis do
     end
 
     describe "#fsum" do
+      subject{ FreshRedis.new(mock_redis, :granularity => 10, :freshness => 60) }
       it "should add the values of keys for specified freshness and granularity" do
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 - 10
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 1
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 2
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 3
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 5
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 8
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 13
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 21
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 34
-        subject.fincr "foo", :freshness => 60, :granularity => 10, :t => now - 60 + 55
+        subject.fincr "foo", :t => now - 60 - 10
+        subject.fincr "foo", :t => now - 60 + 1
+        subject.fincr "foo", :t => now - 60 + 2
+        subject.fincr "foo", :t => now - 60 + 3
+        subject.fincr "foo", :t => now - 60 + 5
+        subject.fincr "foo", :t => now - 60 + 8
+        subject.fincr "foo", :t => now - 60 + 13
+        subject.fincr "foo", :t => now - 60 + 21
+        subject.fincr "foo", :t => now - 60 + 34
+        subject.fincr "foo", :t => now - 60 + 55
 
-        subject.fsum("foo", :freshness => 60, :granularity => 10, :t => now).should ==  9
+        subject.fsum("foo", :t => now).should ==  9
       end
     end
 
