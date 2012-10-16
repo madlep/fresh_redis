@@ -20,6 +20,7 @@ class FreshRedis
   end
 
   private
+  #TODO extract nil handling out to separate module
   def n(value)
     value || NIL_VALUE
   end
