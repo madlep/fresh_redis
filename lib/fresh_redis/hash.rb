@@ -41,6 +41,7 @@ class FreshRedis
     end
 
     def fhdel(key, hash_key, options={})
+      #TODO provide :force option to really delete key from all buckets
       fhset(key, hash_key, nil, options)
     end
   end

@@ -67,6 +67,14 @@ fresh.fincr "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
 fresh.fsum "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
 ```
 
+# Recipes
+
+## Tracking user signin attempts count over the last hour
+TODO
+
+## Tracking dropped requests for the last day
+TODO
+
 ## Contributing
 
 1. Fork it
