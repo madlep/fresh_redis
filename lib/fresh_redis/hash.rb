@@ -2,7 +2,7 @@ class FreshRedis
   module Hash
 
     def fhset(key, hash_key, value, options={})
-      key = Key.build(key, options)
+      key = build_key(key, options)
       @redis.multi do
         @redis.hset(key.redis_key, hash_key, n(value))
         @redis.expire(key.redis_key, key.freshness)
@@ -10,7 +10,7 @@ class FreshRedis
     end
 
     def fhget(key, hash_key, options={})
-      key = Key.build(key, options)
+      key = build_key(key, options)
 
       bucket_values = @redis.pipelined {
         key.timestamp_buckets.reverse.each do |bucket_key|
@@ -25,7 +25,7 @@ class FreshRedis
     end
 
     def fhgetall(key, options={})
-      key = Key.build(key, options)
+      key = build_key(key, options)
 
       bucket_values = @redis.pipelined {
         key.timestamp_buckets.each do |bucket_key|

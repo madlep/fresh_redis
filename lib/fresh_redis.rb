@@ -9,8 +9,14 @@ class FreshRedis
 
   NIL_VALUE = "__FR_NIL__"
 
-  def initialize(redis)
+  def initialize(redis, options={})
     @redis = redis
+    @options = options
+  end
+
+  def build_key(base_key, options={})
+    options = @options.merge(options)
+    Key.build(base_key, options)
   end
 
   private

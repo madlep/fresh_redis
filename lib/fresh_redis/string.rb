@@ -1,7 +1,7 @@
 class FreshRedis
   module String
     def fincr(key, options={})
-      key = Key.build(key, options)
+      key = build_key(key, options)
       @redis.multi do
         @redis.incr(key.redis_key)
         @redis.expire(key.redis_key, key.freshness)
@@ -9,7 +9,7 @@ class FreshRedis
     end
 
     def fsum(key, options={})
-      key = Key.build(key, options)
+      key = build_key(key, options)
       @redis.pipelined {
         key.timestamp_buckets.each do |bucket_key|
           @redis.get(bucket_key)
