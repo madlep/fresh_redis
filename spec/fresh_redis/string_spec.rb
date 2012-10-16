@@ -10,9 +10,9 @@ describe FreshRedis do
   context "string keys" do
     describe "#fincr" do
       it "should increment the key for the normalized timestamp" do
-        subject.fincr "foo", :granularity => 60, :t => now
-        subject.fincr "foo", :granularity => 60, :t => now + 3
-        subject.fincr "foo", :granularity => 60, :t => now + 60 # different normalized key
+        subject.fincr "foo", :t => now
+        subject.fincr "foo", :t => now + 3
+        subject.fincr "foo", :t => now + 60 # different normalized key
         mock_redis.data["foo:#{normalized_now_minute}"].to_i.should == 2
       end
 

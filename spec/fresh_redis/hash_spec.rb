@@ -14,15 +14,15 @@ describe FreshRedis do
 
     describe "#fhset" do
       it "sets a value for a key in a hash for the normalized timestamp" do
-        subject.fhset "foo", "bar", "value", :granularity => 60, :t => now - 3
-        subject.fhset "foo", "bar", "newer_value", :granularity => 60, :t => now
-        subject.fhset "foo", "bar", "different_bucket", :granularity => 60, :t => now - 60 # different normalized key
+        subject.fhset "foo", "bar", "value", :t => now - 3
+        subject.fhset "foo", "bar", "newer_value", :t => now
+        subject.fhset "foo", "bar", "different_bucket", :t => now - 60 # different normalized key
 
         mock_redis.data["foo:#{normalized_now_minute}"].should == {"bar" => "newer_value"}
       end
 
       it "sets a placeholder value if nil is set as the value" do
-        subject.fhset "foo", "bar", nil, :granularity => 60, :t => now
+        subject.fhset "foo", "bar", nil, :t => now
 
         mock_redis.data["foo:#{normalized_now_minute}"].should == {"bar" => FreshRedis::NIL_VALUE }
       end
@@ -37,10 +37,10 @@ describe FreshRedis do
 
     describe "#fhdel" do
       it "sets the value for a key in a hash for the normalized timestamp to be placeholder nil" do
-        subject.fhset "foo", "bar", "value", :granularity => 60, :t => now
-        subject.fhset "foo", "bar", "different_bucket", :granularity => 60, :t => now - 60
+        subject.fhset "foo", "bar", "value", :t => now
+        subject.fhset "foo", "bar", "different_bucket", :t => now - 60
 
-        subject.fhdel "foo", "bar", :granularity => 60, :t => now # Should only change the most recent bucket
+        subject.fhdel "foo", "bar", :t => now # Should only change the most recent bucket
 
         mock_redis.data["foo:#{normalized_now_minute}"].should == { "bar" => FreshRedis::NIL_VALUE }
         mock_redis.data["foo:#{normalized_one_minute_ago}"].should == { "bar" => "different_bucket" }
@@ -53,7 +53,7 @@ describe FreshRedis do
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "bar", "bill"
         mock_redis.hset "foo:#{normalized_two_minutes_ago}", "bar", "louis"
 
-        subject.fhget("foo", "bar", :granularity => 60, :t => now).should == "bill"
+        subject.fhget("foo", "bar", :t => now).should == "bill"
       end
 
       it "returns nil if the most recent value is the nil placeholder" do
@@ -61,7 +61,7 @@ describe FreshRedis do
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "bar", FreshRedis::NIL_VALUE
         mock_redis.hset "foo:#{normalized_two_minutes_ago}", "bar", "louis"
 
-        subject.fhget("foo", "bar", :granularity => 60, :t => now).should be_nil
+        subject.fhget("foo", "bar", :t => now).should be_nil
       end
 
       it "returns the most recent value if a nil placeholder value in an earlier bucket has been overwritten in a later bucket" do
@@ -69,17 +69,17 @@ describe FreshRedis do
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "bar", FreshRedis::NIL_VALUE
         mock_redis.hset "foo:#{normalized_two_minutes_ago}", "bar", "louis"
 
-        subject.fhget("foo", "bar", :granularity => 60, :t => now).should == "francis"
+        subject.fhget("foo", "bar", :t => now).should == "francis"
       end
 
       it "returns nil if value is not found" do
-        subject.fhget("foo", "bar", :granularity => 60, :t => now).should be_nil
+        subject.fhget("foo", "bar", :t => now).should be_nil
       end
 
       it "returns nil if the value is in a bucket that has expired" do
         # this should be handled by redis expiry anyway, but verify code is behaving as expected and not querying more data than needed
         mock_redis.hset "foo:#{normalized_old}", "bar", "louis"
-        subject.fhget("foo", "bar", :granularity => 60, :t => now).should be_nil
+        subject.fhget("foo", "bar", :t => now).should be_nil
       end
     end
 
@@ -89,7 +89,7 @@ describe FreshRedis do
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "baz", "zoey"
         mock_redis.hset "foo:#{normalized_two_minutes_ago}", "boz", "louis"
 
-        subject.fhgetall("foo", :granularity => 60, :t => now).should == { "bar" => "francis", "baz" => "zoey", "boz" => "louis" }
+        subject.fhgetall("foo", :t => now).should == { "bar" => "francis", "baz" => "zoey", "boz" => "louis" }
       end
 
       it "removes keys that have a nil placeholder value as the most recent value" do
@@ -97,7 +97,7 @@ describe FreshRedis do
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "bar", "zoey"
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "baz", "louis"
 
-        subject.fhgetall("foo", :granularity => 60, :t => now).should == { "baz" => "louis" }
+        subject.fhgetall("foo", :t => now).should == { "baz" => "louis" }
       end
 
       it "returns the most recent value if a nil placeholder value in an earlier bucket has been overwritten in a later bucket" do
@@ -106,7 +106,7 @@ describe FreshRedis do
         mock_redis.hset "foo:#{normalized_two_minutes_ago}", "bar", "louis"
         mock_redis.hset "foo:#{normalized_one_minute_ago}", "baz", "bill"
 
-        subject.fhgetall("foo", :granularity => 60, :t => now).should == { "bar" => "francis", "baz" => "bill" }
+        subject.fhgetall("foo", :t => now).should == { "bar" => "francis", "baz" => "bill" }
       end
     end
   end
