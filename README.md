@@ -51,6 +51,8 @@ fresh.fsum "failed_login" # will return 2, cause the first incr has expired by n
 # TODO
 ```
 
+TODO note about handling of deletes/nil values and :force option on `fhdel` operation
+
 ### Tweaking _"freshness"_ and _"granularity"_. 
 
 Think of it like stock rotation at your local supermarket. Freshness is how long we'll keep food around for before throwing it out, granularity is what batches we'll throw old food out together as. Something like _"we'll keep food around for a week, but we'll throw out everything for the same day at the same time."_ This is a performance trade off. Smaller granularity means more precise expiration of data, at the expense of having to store, retrieve, and check more buckets of data to get the aggregate value.
