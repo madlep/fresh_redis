@@ -2,7 +2,6 @@ require 'time'
 
 class FreshRedis
   class Key
-    # TODO remove concept of time from a key. Just be about redis key, freshness, granularity
 
     DEFAULT_OPTIONS = {
       :freshness => 60 * 60, # 1 hour
