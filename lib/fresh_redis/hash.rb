@@ -4,7 +4,7 @@ class FreshRedis
     def fhset(key, hash_key, value, options={})
       key = build_key(key, options)
       @redis.multi do
-        @redis.hset(key.redis_key, hash_key, n(value))
+        @redis.hset(key.redis_key, hash_key, value)
         @redis.expire(key.redis_key, key.freshness)
       end
     end
@@ -19,9 +19,7 @@ class FreshRedis
       }
 
       # find the first non-nil value
-      most_recent_value = bucket_values.find{|e| e } 
-
-      un_n(most_recent_value)
+      bucket_values.find{|e| e } 
     end
 
     def fhgetall(key, options={})
@@ -37,12 +35,17 @@ class FreshRedis
         acc.merge(bucket_hash)
       }
 
-      merged_values.reject{ |key, value| n?(value) }
+      merged_values.reject{ |key, value| !value }
     end
 
     def fhdel(key, hash_key, options={})
-      #TODO provide :force option to really delete key from all buckets
-      fhset(key, hash_key, nil, options)
+      key = build_key(key, options)
+
+      bucket_values = @redis.pipelined {
+        key.timestamp_buckets.each do |bucket_key|
+          @redis.hdel(bucket_key, hash_key)
+        end
+      }
     end
   end
 end
