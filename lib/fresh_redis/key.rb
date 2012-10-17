@@ -1,3 +1,5 @@
+require 'time'
+
 class FreshRedis
   class Key
     # TODO remove concept of time from a key. Just be about redis key, freshness, granularity
@@ -15,27 +17,27 @@ class FreshRedis
       base_key = args[0]
         
       options = DEFAULT_OPTIONS.merge(args[1] || {})
-      options[:t] ||= Time.now.to_i
 
-      self.new(base_key, options[:t], options[:freshness], options[:granularity])
+      self.new(base_key, options[:freshness], options[:granularity])
     end
     
     attr_reader :freshness
 
-    def initialize(base_key, t, freshness, granularity)
+    def initialize(base_key, freshness, granularity)
       @base_key     = base_key
-      @t            = t
       @freshness    = freshness
       @granularity  = granularity
     end
 
     def redis_key
-      [@base_key, normalize_time(@t, @granularity)].join(":")
+      [@base_key, normalize_time(Time.now.to_i, @granularity)].join(":")
     end
 
     def timestamp_buckets
-      from = normalize_time(@t - @freshness, @granularity)
-      to = normalize_time(@t, @granularity)
+      t = Time.now.to_i
+
+      from = normalize_time(t - @freshness, @granularity)
+      to = normalize_time(t, @granularity)
       (from..to).step(@granularity).map{|timestamp| [@base_key, timestamp].join(":") }
     end
 
@@ -43,7 +45,6 @@ class FreshRedis
       same = true
       same &= Key === other
       same &= @base_key     == other.instance_variable_get(:@base_key)
-      same &= @t            == other.instance_variable_get(:@t)
       same &= @freshness    == other.instance_variable_get(:@freshness)
       same &= @granularity  == other.instance_variable_get(:@granularity)
       same

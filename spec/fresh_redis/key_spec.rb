@@ -1,8 +1,12 @@
 require 'fresh_redis'
+require 'timecop'
 
 describe FreshRedis::Key do
-  let(:now) { Time.new(2012, 9, 27, 15, 40, 56, "+10:00").to_i }
-  let(:normalized_now_minute) { Time.new(2012, 9, 27, 15, 40, 0, "+10:00").to_i }
+  let(:now) { Time.new(2012, 9, 27, 15, 40, 56, "+10:00") }
+  let(:normalized_now_minute) { Time.new(2012, 9, 27, 15, 40, 0, "+10:00") }
+
+  before(:each) { Timecop.travel(now) }
+  after(:each) { Timecop.return }
 
   describe ".build" do
     it "complains if no args" do
@@ -10,13 +14,13 @@ describe FreshRedis::Key do
     end
 
     it "just returns the key if a FreshRedis::Key is provided" do
-      key = FreshRedis::Key.new("key", 123, 456, 789)
+      key = FreshRedis::Key.new("key", 123, 456)
       FreshRedis::Key.build(key).should == key
     end
 
     it "constructs a FreshRedis::Key with the provided options" do
-      key = FreshRedis::Key.build("key", :t => 123, :freshness => 456, :granularity => 789)
-      key.should == FreshRedis::Key.new("key", 123, 456, 789)
+      key = FreshRedis::Key.build("key", :freshness => 123, :granularity => 456)
+      key.should == FreshRedis::Key.new("key", 123, 456)
     end
 
         
@@ -24,7 +28,6 @@ describe FreshRedis::Key do
       key = FreshRedis::Key.build("key")
       key.should == FreshRedis::Key.new(
         "key", 
-        Time.now.to_i,
         FreshRedis::Key::DEFAULT_OPTIONS[:freshness], 
         FreshRedis::Key::DEFAULT_OPTIONS[:granularity]
       )
@@ -34,12 +37,12 @@ describe FreshRedis::Key do
 
   describe "#redis_key" do
     it "should append the normalized timestamp to the key" do
-      FreshRedis::Key.build("foo", :t => now, :granularity => 60).redis_key.should == "foo:#{normalized_now_minute}"
+      FreshRedis::Key.build("foo", :granularity => 60).redis_key.should == "foo:#{normalized_now_minute.to_i}"
     end
   end
   
   describe "#timestamp_buckets" do
-    let(:buckets) { FreshRedis::Key.build("foo", :t => now, :freshness => 600, :granularity => 60).timestamp_buckets }
+    let(:buckets) { FreshRedis::Key.build("foo", :freshness => 600, :granularity => 60).timestamp_buckets }
     it "generates an enumerable over the range" do
       buckets.should be_kind_of(Enumerable)
     end
@@ -49,15 +52,15 @@ describe FreshRedis::Key do
     end
 
     it "has the first timestamp as the maximum freshness" do
-      buckets.first.should == ["foo", normalized_now_minute - 600].join(":")
+      buckets.first.should == ["foo", normalized_now_minute.to_i - 600].join(":")
     end
 
     it "has now as the maximum freshness" do
-      buckets.to_a.last.should == ["foo", normalized_now_minute].join(":")
+      buckets.to_a.last.should == ["foo", normalized_now_minute.to_i].join(":")
     end
 
     it "steps through the normalized timestamps split up by granularity" do
-      buckets.each_with_index{|b, i| b.should == ["foo", normalized_now_minute - 600 + i * 60].join(":") }
+      buckets.each_with_index{|b, i| b.should == ["foo", normalized_now_minute.to_i - 600 + i * 60].join(":") }
     end
   end
 end
