@@ -8,6 +8,14 @@ class FreshRedis
       end
     end
 
+    def fdecr(key, options={})
+      key = build_key(key, options)
+      @redis.multi do
+        @redis.decr(key.redis_key)
+        @redis.expire(key.redis_key, key.freshness)
+      end
+    end
+
     def fsum(key, options={})
       key = build_key(key, options)
       @redis.pipelined {
