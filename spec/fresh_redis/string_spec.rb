@@ -17,8 +17,9 @@ describe FreshRedis do
       it "should increment the key for the normalized timestamp" do
         Timecop.freeze(now)       { subject.fincr "foo" }
         Timecop.freeze(now + 3)   { subject.fincr "foo" }
-        Timecop.freeze(now + 60)  { subject.fincr "foo" } # different normalized key
+        Timecop.freeze(now - 60)  { subject.fincr "foo" } # different normalized key
         mock_redis.data["foo:#{normalized_now_minute.to_i}"].to_i.should == 2
+        mock_redis.data["foo:#{normalized_one_minute_ago.to_i}"].to_i.should == 1
       end
 
       it "should set the freshness as the expiry" do
