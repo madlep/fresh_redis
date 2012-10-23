@@ -26,6 +26,8 @@ Or install it yourself as:
 
 ### Simple counts
 
+Increment a counter, but gradually expire portions of that counter. Useful for *"find count of X for the last Y minutes"* type queries, where some event occurs occasionally over a period of time.
+
 ```ruby
 require "redis"
 require "fresh_redis"
@@ -47,11 +49,32 @@ fresh.fsum "failed_login" # will return 2, cause the first incr has expired by n
 
 ### Hash operations
 
-```ruby
-# TODO
-```
+fresh_redis Hashes work similarly to existing Redis hashes, except that keys have individual expiry.
 
-TODO note about handling of deletes/nil values and :force option on `fhdel` operation
+```ruby
+require "redis"
+require "fresh_redis"
+fresh = FreshRedis.new(Redis.current)
+
+fresh.fhset "banned_users", "madlep", "threatening to rewrite everything in Erlang"
+# wait a bit
+fresh.fhset "banned_users", "normthegnome", "inappropriate office conduct"
+fresh.fhset "banned_users", "joeblogs", "suspected ninja"
+
+# then straight away...
+fresh.fhget "banned_users", "madlep" # will return "threatening..."
+fresh.fhget "banned_users", "normthegnone" # will return "inappropriate..."
+fresh.fhget "banned_users", "joeblogs", # will return "suspected..."
+fresh.fhgetall "banned_users" # will return hash of {"madlep" => ..., "normthegnone" => ..., "joeblogs" => ...}
+
+# wait for first fhset to expire
+
+fresh.fhget "banned_users", "madlep" # will return nil
+fresh.fhget "banned_users", "normthegnone" # will return "inappropriate..." - unchanged
+fresh.fhget "banned_users", "joeblogs", # will return "suspected..." - unchanged
+fresh.fhgetall "banned_users" # will return hash WITHOUT "madlep" as a key (just "normthegnone" and "joeblogs")
+
+```
 
 ### Tweaking _"freshness"_ and _"granularity"_. 
 
@@ -59,14 +82,13 @@ Think of it like stock rotation at your local supermarket. Freshness is how long
 
 ```ruby
 # lets track douch users spamming the forum so we can do something about it...
+fresh = FreshRedis.new(Redis.current, :freshness => 600, :granularity => 30)
 
 # store post count for a user for 10 minutes (600 seconds), in buckets of time duration 30 seconds
-fresh.fincr "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
+fresh.fincr "recent_posts:#{user.id}"
 
-# ...
-
-# note, need to pass in the SAME freshness and granularity options as fincr, so it can correclty lookup the correct keys
-fresh.fsum "recent_posts:#{user.id}", :freshness => 600, :granularity => 30
+# do stuff
+fresh.fsum "recent_posts:#{user.id}"
 ```
 
 # Recipes
