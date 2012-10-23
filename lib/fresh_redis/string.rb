@@ -1,19 +1,23 @@
 class FreshRedis
   module String
-    def fincr(key, options={})
+    def fincrby(key, increment, options={})
       key = build_key(key, options)
       @redis.multi do
-        @redis.incr(key.redis_key)
+        @redis.incrby(key.redis_key, increment)
         @redis.expire(key.redis_key, key.freshness)
       end
     end
 
+    def fincr(key, options={})
+      fincrby(key, 1, options)
+    end
+
     def fdecr(key, options={})
-      key = build_key(key, options)
-      @redis.multi do
-        @redis.decr(key.redis_key)
-        @redis.expire(key.redis_key, key.freshness)
-      end
+      fincrby(key, -1, options)
+    end
+
+    def fdecrby(key, decrement, options={})
+      fincrby(key, -1 * decrement, options)
     end
 
     def fsum(key, options={})

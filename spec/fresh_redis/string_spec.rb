@@ -29,6 +29,22 @@ describe FreshRedis do
       end
     end
 
+    describe "#fincrby" do
+      it "should increment the key for the normalized timestamp by the specified amount" do
+        Timecop.freeze(now)       { subject.fincrby "foo", 2 } 
+        Timecop.freeze(now + 3)   { subject.fincrby "foo", 3 }
+        Timecop.freeze(now - 60)  { subject.fincrby "foo", 4 } # different normalized key
+        mock_redis.data["foo:#{normalized_now_minute.to_i}"].to_i.should == 5
+        mock_redis.data["foo:#{normalized_one_minute_ago.to_i}"].to_i.should == 4
+      end
+
+      it "should set the freshness as the expiry" do
+        # relying on mock_redis's time handling here - which converts to/from using Time.now Possible flakey temporal breakage potential
+        subject.fincrby "foo", 5, :freshness => 3600
+        mock_redis.ttl("foo:#{normalized_now_minute.to_i}").should == 3600
+      end
+    end
+
     describe "#fdecr" do
       it "should decrement the key for the normalized timestamp" do
         Timecop.freeze(now)       { subject.fdecr "foo" }
@@ -41,6 +57,22 @@ describe FreshRedis do
       it "should set the freshness as the expiry" do
         # relying on mock_redis's time handling here - which converts to/from using Time.now Possible flakey temporal breakage potential
         subject.fdecr "foo", :freshness => 3600
+        mock_redis.ttl("foo:#{normalized_now_minute.to_i}").should == 3600
+      end
+    end
+
+    describe "#fdecrby" do
+      it "should decrement the key for the normalized timestamp by the specified amount" do
+        Timecop.freeze(now)       { subject.fdecrby "foo", 2 } 
+        Timecop.freeze(now + 3)   { subject.fdecrby "foo", 3 }
+        Timecop.freeze(now - 60)  { subject.fdecrby "foo", 4 } # different normalized key
+        mock_redis.data["foo:#{normalized_now_minute.to_i}"].to_i.should == -5
+        mock_redis.data["foo:#{normalized_one_minute_ago.to_i}"].to_i.should == -4
+      end
+
+      it "should set the freshness as the expiry" do
+        # relying on mock_redis's time handling here - which converts to/from using Time.now Possible flakey temporal breakage potential
+        subject.fdecrby "foo", 5, :freshness => 3600
         mock_redis.ttl("foo:#{normalized_now_minute.to_i}").should == 3600
       end
     end
