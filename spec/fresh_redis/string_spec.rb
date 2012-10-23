@@ -46,20 +46,10 @@ describe FreshRedis do
     end
 
     describe "#fsum" do
-      subject{ FreshRedis.new(mock_redis, :granularity => 10, :freshness => 60) }
       it "should add the values of keys for specified freshness and granularity" do
-        Timecop.freeze(now - 60 - 10) { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 1)  { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 2)  { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 3)  { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 5)  { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 8)  { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 13) { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 21) { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 34) { subject.fincr "foo" }
-        Timecop.freeze(now - 60 + 55) { subject.fincr "foo" }
-
-        subject.fsum("foo").should ==  9
+        mock_redis.set("foo:#{normalized_now_minute.to_i}", "7")
+        mock_redis.set("foo:#{normalized_one_minute_ago.to_i}", "-2")
+        subject.fsum("foo").should ==  5
       end
     end
 
