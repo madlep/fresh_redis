@@ -56,23 +56,23 @@ require "redis"
 require "fresh_redis"
 fresh = FreshRedis.new(Redis.current)
 
-fresh.fhset "banned_users", "madlep", "threatening to rewrite everything in Erlang"
+fresh.fhset "temp_banned_users", "madlep", "too much cowbell"
 # wait a bit
-fresh.fhset "banned_users", "normthegnome", "inappropriate office conduct"
-fresh.fhset "banned_users", "joeblogs", "suspected ninja"
+fresh.fhset "temp_banned_users", "normthegnome", "inappropriate office conduct"
+fresh.fhset "temp_banned_users", "joeblogs", "suspected ninja"
 
 # then straight away...
-fresh.fhget "banned_users", "madlep" # will return "threatening..."
-fresh.fhget "banned_users", "normthegnone" # will return "inappropriate..."
-fresh.fhget "banned_users", "joeblogs", # will return "suspected..."
-fresh.fhgetall "banned_users" # will return hash of {"madlep" => ..., "normthegnone" => ..., "joeblogs" => ...}
+fresh.fhget "temp_banned_users", "madlep" # will return "threatening..."
+fresh.fhget "temp_banned_users", "normthegnone" # will return "inappropriate..."
+fresh.fhget "temp_banned_users", "joeblogs", # will return "suspected..."
+fresh.fhgetall "temp_banned_users" # will return hash of {"madlep" => ..., "normthegnone" => ..., "joeblogs" => ...}
 
 # wait for first fhset to expire
 
-fresh.fhget "banned_users", "madlep" # will return nil
-fresh.fhget "banned_users", "normthegnone" # will return "inappropriate..." - unchanged
-fresh.fhget "banned_users", "joeblogs", # will return "suspected..." - unchanged
-fresh.fhgetall "banned_users" # will return hash WITHOUT "madlep" as a key (just "normthegnone" and "joeblogs")
+fresh.fhget "temp_banned_users", "madlep" # will return nil
+fresh.fhget "temp_banned_users", "normthegnone" # will return "inappropriate..." - unchanged
+fresh.fhget "temp_banned_users", "joeblogs", # will return "suspected..." - unchanged
+fresh.fhgetall "temp_banned_users" # will return hash WITHOUT "madlep" as a key (just "normthegnone" and "joeblogs")
 
 ```
 
