@@ -12,6 +12,14 @@ class FreshRedis
       fincrby(key, 1, options)
     end
 
+    def fincrbyfloat(key, increment, options={})
+      key = build_key(key, options)
+      @redis.multi do
+        @redis.incrbyfloat(key.redis_key, increment)
+        @redis.expire(key.redis_key, key.freshness)
+      end
+    end
+
     def fdecr(key, options={})
       fincrby(key, -1, options)
     end
@@ -27,7 +35,7 @@ class FreshRedis
           @redis.get(bucket_key)
         end
       }.reduce(0){|acc, value|
-        value ? acc + value.to_i : acc
+        value ? acc + value.to_f : acc
       }
     end
   end

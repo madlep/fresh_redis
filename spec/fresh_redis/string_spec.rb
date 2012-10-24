@@ -45,6 +45,22 @@ describe FreshRedis do
       end
     end
 
+    describe "#fincrbyfloat" do
+      it "should increment the key for the normalized timestamp by the specified amount" do
+        Timecop.freeze(now)       { subject.fincrbyfloat "foo", 2.1 } 
+        Timecop.freeze(now + 3)   { subject.fincrbyfloat "foo", 3.2 }
+        Timecop.freeze(now - 60)  { subject.fincrbyfloat "foo", 4.3 } # different normalized key
+        mock_redis.data["foo:#{normalized_now_minute.to_i}"].to_f.should be_within(0.00001).of(5.3)
+        mock_redis.data["foo:#{normalized_one_minute_ago.to_i}"].to_f.should be_within(0.00001).of(4.3)
+      end
+
+      it "should set the freshness as the expiry" do
+        # relying on mock_redis's time handling here - which converts to/from using Time.now Possible flakey temporal breakage potential
+        subject.fincrbyfloat "foo", 5, :freshness => 3600
+        mock_redis.ttl("foo:#{normalized_now_minute.to_i}").should == 3600
+      end
+    end
+
     describe "#fdecr" do
       it "should decrement the key for the normalized timestamp" do
         Timecop.freeze(now)       { subject.fdecr "foo" }
