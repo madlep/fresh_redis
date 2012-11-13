@@ -37,7 +37,7 @@ class FreshRedis
 
       from = normalize_time(t - @freshness, @granularity)
       to = normalize_time(t, @granularity)
-      (from..to).step(@granularity).map{|timestamp| [@base_key, timestamp].join(":") }
+      (from..to).step(@granularity).map{|timestamp| [@base_key, timestamp.to_i].join(":") }
     end
 
     def ==(other)
