@@ -38,7 +38,7 @@ describe FreshRedis do
       end
     end
 
-    describe "#fhdel" do
+    describe "#fsrem" do
       it "removes the field from all timestamp buckets" do
         Timecop.travel(now)       { subject.fsadd "foo", "value" }
         Timecop.travel(now)       { subject.fsadd "foo", "don't touch" }
