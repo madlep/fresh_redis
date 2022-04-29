@@ -12,11 +12,11 @@ class FreshRedis
     def fhget(key, hash_key, options={})
       key = build_key(key, options)
 
-      bucket_values = @redis.pipelined {
+      bucket_values = @redis.pipelined do |pipeline|
         key.timestamp_buckets.reverse.each do |bucket_key|
-          @redis.hget(bucket_key, hash_key)
+          pipeline.hget(bucket_key, hash_key)
         end
-      }
+      end
 
       # find the first non-nil value
       bucket_values.find{|e| e } 
@@ -25,11 +25,11 @@ class FreshRedis
     def fhgetall(key, options={})
       key = build_key(key, options)
 
-      bucket_values = @redis.pipelined {
+      bucket_values = @redis.pipelined do |pipeline|
         key.timestamp_buckets.each do |bucket_key|
-          @redis.hgetall(bucket_key)
+          pipeline.hgetall(bucket_key)
         end
-      }
+      end
 
       merged_values = bucket_values.inject({}){ |acc, bucket_hash|
         acc.merge(bucket_hash)
@@ -41,11 +41,11 @@ class FreshRedis
     def fhdel(key, hash_key, options={})
       key = build_key(key, options)
 
-      bucket_values = @redis.pipelined {
+      bucket_values = @redis.pipelined do |pipeline|
         key.timestamp_buckets.each do |bucket_key|
-          @redis.hdel(bucket_key, hash_key)
+          pipeline.hdel(bucket_key, hash_key)
         end
-      }
+      end
     end
   end
 end

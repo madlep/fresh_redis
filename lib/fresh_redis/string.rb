@@ -30,9 +30,9 @@ class FreshRedis
 
     def fsum(key, options={})
       key = build_key(key, options)
-      @redis.pipelined {
+      @redis.pipelined { |pipeline|
         key.timestamp_buckets.each do |bucket_key|
-          @redis.get(bucket_key)
+          pipeline.get(bucket_key)
         end
       }.reduce(0){|acc, value|
         value ? acc + value.to_f : acc
