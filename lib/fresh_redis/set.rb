@@ -3,9 +3,9 @@ class FreshRedis
 
     def fsadd(key, value, options={})
       key = build_key(key, options)
-      @redis.multi do
-        @redis.sadd(key.redis_key, value)
-        @redis.expire(key.redis_key, key.freshness)
+      @redis.multi do |transaction|
+        transaction.sadd(key.redis_key, value)
+        transaction.expire(key.redis_key, key.freshness)
       end
     end
 

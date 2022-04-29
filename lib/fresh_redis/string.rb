@@ -2,9 +2,9 @@ class FreshRedis
   module String
     def fincrby(key, increment, options={})
       key = build_key(key, options)
-      @redis.multi do
-        @redis.incrby(key.redis_key, increment)
-        @redis.expire(key.redis_key, key.freshness)
+      @redis.multi do |transaction|
+        transaction.incrby(key.redis_key, increment)
+        transaction.expire(key.redis_key, key.freshness)
       end
     end
 
@@ -14,9 +14,9 @@ class FreshRedis
 
     def fincrbyfloat(key, increment, options={})
       key = build_key(key, options)
-      @redis.multi do
-        @redis.incrbyfloat(key.redis_key, increment)
-        @redis.expire(key.redis_key, key.freshness)
+      @redis.multi do |transaction|
+        transaction.incrbyfloat(key.redis_key, increment)
+        transaction.expire(key.redis_key, key.freshness)
       end
     end
 

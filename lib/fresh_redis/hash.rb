@@ -3,9 +3,9 @@ class FreshRedis
 
     def fhset(key, hash_key, value, options={})
       key = build_key(key, options)
-      @redis.multi do
-        @redis.hset(key.redis_key, hash_key, value)
-        @redis.expire(key.redis_key, key.freshness)
+      @redis.multi do |transaction|
+        transaction.hset(key.redis_key, hash_key, value)
+        transaction.expire(key.redis_key, key.freshness)
       end
     end
 
