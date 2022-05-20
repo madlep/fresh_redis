@@ -3,20 +3,20 @@ class FreshRedis
 
     def fsadd(key, value, options={})
       key = build_key(key, options)
-      @redis.multi do
-        @redis.sadd(key.redis_key, value)
-        @redis.expire(key.redis_key, key.freshness)
+      @redis.multi do |transaction|
+        transaction.sadd(key.redis_key, value)
+        transaction.expire(key.redis_key, key.freshness)
       end
     end
 
     def fsmembers(key, options={})
       key = build_key(key, options)
 
-      bucket_values = @redis.pipelined {
+      bucket_values = @redis.pipelined do |pipeline|
         key.timestamp_buckets.reverse.each do |bucket_key|
-          @redis.smembers(bucket_key)
+          pipeline.smembers(bucket_key)
         end
-      }
+      end
 
       # find the first non-nil value
       bucket_values.flatten.uniq
@@ -25,11 +25,11 @@ class FreshRedis
     def fsismembers(key, value, options={})
       key = build_key(key, options)
 
-      bucket_values = @redis.pipelined {
+      bucket_values = @redis.pipelined do |pipeline|
         key.timestamp_buckets.reverse.each do |bucket_key|
-          return true if @redis.sismembers(bucket_key, value)
+          return true if pipeline.sismembers(bucket_key, value)
         end
-      }
+      end
 
       # find the first non-nil value
       return false
@@ -38,11 +38,11 @@ class FreshRedis
     def fsrem(key, value, options={})
       key = build_key(key, options)
 
-      bucket_values = @redis.pipelined {
+      bucket_values = @redis.pipelined do |pipeline|
         key.timestamp_buckets.reverse.each do |bucket_key|
-          @redis.srem(bucket_key, value)
+          pipeline.srem(bucket_key, value)
         end
-      }
+      end
     end
   end
 end
